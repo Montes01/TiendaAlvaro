@@ -1,0 +1,246 @@
+USE [TIENDA]
+GO
+/****** Object:  User [montes]    Script Date: 29/11/2023 1:08:25 a. m. ******/
+CREATE USER [montes] WITHOUT LOGIN WITH DEFAULT_SCHEMA=[dbo]
+GO
+/****** Object:  Table [dbo].[BOOKS]    Script Date: 29/11/2023 1:08:25 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[BOOKS](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[name] [varchar](50) NULL,
+	[price] [decimal](10, 2) NULL,
+	[stock] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ITEM]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ITEM](
+	[fkIdUser] [int] NOT NULL,
+	[fkIdBooks] [int] NOT NULL,
+	[quantity] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[fkIdUser] ASC,
+	[fkIdBooks] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[USERS]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[USERS](
+	[id] [int] NOT NULL,
+	[name] [varchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[ITEM] ADD  DEFAULT ((1)) FOR [quantity]
+GO
+ALTER TABLE [dbo].[ITEM]  WITH CHECK ADD FOREIGN KEY([fkIdBooks])
+REFERENCES [dbo].[BOOKS] ([id])
+GO
+ALTER TABLE [dbo].[ITEM]  WITH CHECK ADD FOREIGN KEY([fkIdUser])
+REFERENCES [dbo].[USERS] ([id])
+GO
+/****** Object:  StoredProcedure [dbo].[usp_AddBook]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROC [dbo].[usp_AddBook]
+@name VARCHAR(50), @price DECIMAL(10,2), @stock INT
+AS
+BEGIN
+	INSERT INTO BOOKS
+	(name,price,stock)
+	VALUES
+	(@name, @price, @stock)
+END;
+GO
+/****** Object:  StoredProcedure [dbo].[usp_AddItemToCart]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROC [dbo].[usp_AddItemToCart]
+	@userId INT, @bookId INT, @quantity INT
+AS
+BEGIN
+	INSERT INTO ITEM
+	( fkIdUser, fkIdBooks, quantity)
+	VALUES 
+	(@userId, @bookId, @quantity)
+END;
+
+GO
+/****** Object:  StoredProcedure [dbo].[usp_ClearCart]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[usp_ClearCart]
+	@userId INT
+AS
+BEGIN
+	DELETE FROM ITEM WHERE fkIdUser = @userId
+END;
+
+GO
+/****** Object:  StoredProcedure [dbo].[usp_CreateUser]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ CREATE PROCEDURE [dbo].[usp_CreateUser]
+ @id INT,
+ @name VARCHAR(50)
+ AS
+ BEGIN
+ INSERT INTO USERS VALUES(@id, @name)
+ END
+GO
+/****** Object:  StoredProcedure [dbo].[usp_DeleteBook]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[usp_DeleteBook]
+@id int
+AS
+BEGIN
+DELETE FROM Books WHERE Id = @id
+END
+GO
+/****** Object:  StoredProcedure [dbo].[usp_DeleteUser]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+  CREATE PROCEDURE [dbo].[usp_DeleteUser]
+  @Id INT
+  AS
+  BEGIN
+  DELETE FROM USERS WHERE Id = @Id
+  END
+GO
+/****** Object:  StoredProcedure [dbo].[usp_GetBook]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[usp_GetBook]
+@id INT
+AS
+	SELECT * FROM BOOKS WHERE id = @id;
+GO
+/****** Object:  StoredProcedure [dbo].[usp_GetUser]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ CREATE PROC [dbo].[usp_GetUser]
+@Id INT 
+AS
+	SELECT * FROM USERS WHERE id = @Id
+GO
+/****** Object:  StoredProcedure [dbo].[usp_ListBooks]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[usp_ListBooks]
+AS
+	SELECT * FROM BOOKS
+GO
+/****** Object:  StoredProcedure [dbo].[usp_ListUsers]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+   CREATE PROCEDURE [dbo].[usp_ListUsers]
+ AS
+ SELECT * FROM USERS
+GO
+/****** Object:  StoredProcedure [dbo].[usp_RemoveItem]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[usp_RemoveItem]
+	@userId INT, @bookId INT
+AS
+BEGIN
+	DELETE FROM ITEM
+	WHERE fkIdUser = @userId AND fkIdBooks = @bookId
+END;
+
+GO
+/****** Object:  StoredProcedure [dbo].[usp_SeeCart]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[usp_SeeCart]
+		@userId INT
+AS
+BEGIN
+	SELECT I.quantity, B.name FROM ITEM I INNER JOIN USERS U ON U.id = I.fkIdUser INNER JOIN BOOKS B ON B.id = I.fkIdBooks WHERE I.fkIdUser = @userId
+END;
+
+GO
+/****** Object:  StoredProcedure [dbo].[usp_UpdateBook]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[usp_UpdateBook]
+@id INT, @name VARCHAR(50) = null, @price DECIMAL(10,2) = null, @stock INT= null
+AS
+BEGIN
+	UPDATE BOOKS SET
+	name = ISNULL(@name, name),
+	price = ISNULL (@price, price),
+	stock = ISNULL (@stock, stock)
+	WHERE id = @id
+END;
+GO
+/****** Object:  StoredProcedure [dbo].[usp_UpdateItemQuantity]    Script Date: 29/11/2023 1:08:26 a. m. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[usp_UpdateItemQuantity]
+	@userId INT, @bookId INT, @quantity INT
+AS
+BEGIN
+	UPDATE ITEM SET
+	quantity = ISNULL(@quantity, quantity+1)
+	WHERE fkIdUser = @userId AND fkIdBooks = @bookId
+END;
+
+GO
